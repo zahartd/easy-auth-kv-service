@@ -1,0 +1,38 @@
+services:
+    auth:
+        build:
+            context: ./auth-cpp
+            dockerfile: ./Dockerfile
+        environment:
+          - PREFIX=${PREFIX:-~/.local}
+          - CCACHE_DIR=/auth_servive/.ccache
+          - CORES_DIR=/cores
+        volumes:
+            - ./auth-cpp/signature.pem:/tmp/signature.pem
+            - ./auth-cpp/signature.pub:/tmp/signature.pub
+        command: ["build/auth_servive", "--private", "/tmp/signature.pem", "--public", "/tmp/signature.pub", "--port", "3001"]
+        ports:
+            - 3001:3001
+    kv:
+        build:
+            context: ./kv-py
+            dockerfile: ./Dockerfile
+        volumes:
+            - ./auth-cpp/signature.pub:/tmp/signature.pub
+        command: ["python", "main.py", "--public", "/tmp/signature.pub", "--port", "3002"]
+        ports:
+            - 3002:3002
+    tests:
+        build:
+            context: tests
+        environment:
+            KV_SERVER_URL: "http://kv:3002"
+            AUTH_SERVER_URL: "http://auth:3001"
+            JWT_PRIVATE_KEY_FILE: "/tmp/signature.pem"
+            JWT_PUBLIC_KEY_FILE: "/tmp/signature.pub"
+        volumes:
+            - ./auth-cpp/signature.pem:/tmp/signature.pem
+            - ./auth-cpp/signature.pub:/tmp/signature.pub
+        depends_on:
+            - auth
+            - kv
