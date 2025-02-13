@@ -5,14 +5,14 @@
 #include <string>
 #include <vector>
 
+#include <fmt/format.h>
+#include <jwt/jwt.hpp>
+
 #include <userver/crypto/hash.hpp>
 #include <userver/easy.hpp>
 #include <userver/rcu/rcu_map.hpp>
 #include <userver/utest/using_namespace_userver.hpp>
-#include "userver/logging/level.hpp"
-
-#include <fmt/format.h>
-#include <jwt/jwt.hpp>
+#include <userver/logging/level.hpp>
 
 std::string ReadFile(const std::string& path) {
   std::ifstream file(path);
